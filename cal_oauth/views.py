@@ -22,7 +22,7 @@ SCOPES = ['https://www.googleapis.com/auth/calendar',
           'https://www.googleapis.com/auth/userinfo.profile',
           'openid']
 # Add this redirect uri in allowed redirect uri list in the google developer app.
-REDIRECT_URL = 'http://127.0.0.1:8000/v1/calendar/redirect'
+REDIRECT_URL = '/v1/calendar/redirect'
 API_SERVICE_NAME = 'calendar'
 API_VERSION = 'v3'
 
@@ -32,8 +32,9 @@ def GoogleCalendarInitView(request):
     # Create google auth flow instance
     google_oauth = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
         CREDENTIALS_FILE, scopes=SCOPES)
+    base_url = '/'.join(request.build_absolute_uri().split('/')[:3])
 
-    google_oauth.redirect_uri = REDIRECT_URL
+    google_oauth.redirect_uri = base_url+REDIRECT_URL
 
     auth_url, state = google_oauth.authorization_url(
         access_type='offline',
@@ -53,7 +54,8 @@ def GoogleCalendarRedirectView(request):
 
     google_oauth = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
         CREDENTIALS_FILE, scopes=SCOPES, state=state)
-    google_oauth.redirect_uri = REDIRECT_URL
+    base_url = '/'.join(request.build_absolute_uri().split('/')[:3])
+    google_oauth.redirect_uri = base_url + REDIRECT_URL
 
     # Fetch access tokens
     auth_response = request.get_full_path()
